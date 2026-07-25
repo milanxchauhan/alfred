@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d0d0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Base">
+<title>Base</title>
+
+<!-- PWA manifest, inlined so this stays a single file -->
+<link rel="manifest" href='data:application/manifest+json,{"name":"Base","short_name":"Base","start_url":"./","display":"standalone","background_color":"#0d0d0f","theme_color":"#0d0d0f","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230d0d0f%22/%3E%3Ctext x=%2250%22 y=%2268%22 font-size=%2256%22 text-anchor=%22middle%22 fill=%22%23e8e2d4%22 font-family=%22Georgia,serif%22%3EB%3C/text%3E%3C/svg%3E","sizes":"any","type":"image/svg+xml"}]}'>
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Crect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230d0d0f%22/%3E%3Ctext x=%2250%22 y=%2268%22 font-size=%2256%22 text-anchor=%22middle%22 fill=%22%23e8e2d4%22 font-family=%22Georgia,serif%22%3EB%3C/text%3E%3C/svg%3E">
+
+<style>
+  /* ---- Design tokens ---- */
+  :root{
+    --bg:#0d0d0f;
+    --panel:#16161a;
+    --panel-2:#1d1d22;
+    --line:#2a2a31;
+    --ink:#e8e2d4;
+    --ink-dim:#8f8b80;
+    --ink-faint:#5c584f;
+    --accent:#c6a15b;      /* muted brass */
+    --accent-soft:#3a3320;
+    --done:#6b8f5c;
+    --danger:#a15b5b;
+    --radius:14px;
+    --f-display:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --f-body:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --f-mono:"SF Mono",ui-monospace,"Cascadia Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--bg);color:var(--ink);font-family:var(--f-body);
+    font-size:16px;line-height:1.5;
+    padding-top:env(safe-area-inset-top);
+    padding-bottom:env(safe-area-inset-bottom);
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .fade{animation:fade .25s ease both;}
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  /* ---- Shell ---- */
+  .wrap{max-width:760px;margin:0 auto;padding:0 18px 120px;}
+  header.top{padding:26px 0 14px;display:flex;align-items:baseline;justify-content:space-between;}
+  header.top h1{
+    font-family:var(--f-display);font-weight:600;font-size:30px;margin:0;
+    letter-spacing:.3px;
+  }
+  header.top .date{color:var(--ink-dim);font-size:13px;font-family:var(--f-mono);}
+
+  /* ---- Tabs / bottom nav ---- */
+  nav.tabs{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:saturate(140%) blur(14px);
+    border-top:1px solid var(--line);
+    padding:8px 0 calc(8px + env(safe-area-inset-bottom));
+    display:flex;justify-content:center;gap:6px;
+  }
+  nav.tabs button{
+    background:none;border:0;color:var(--ink-faint);
+    font-family:var(--f-body);font-size:11px;letter-spacing:.4px;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:6px 16px;border-radius:10px;cursor:pointer;text-transform:uppercase;
+  }
+  nav.tabs button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  nav.tabs button.active{color:var(--accent);}
+
+  /* ---- Generic bits ---- */
+  .eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:2px;
+    text-transform:uppercase;color:var(--ink-faint);margin:0 0 12px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);}
+  .empty{color:var(--ink-faint);text-align:center;padding:44px 20px;font-style:italic;
+    font-family:var(--f-display);font-size:17px;}
+  input,textarea{
+    font-family:var(--f-body);color:var(--ink);background:var(--panel-2);
+    border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:15px;width:100%;
+  }
+  input:focus,textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent);}
+  textarea{resize:vertical;min-height:44px;line-height:1.55;}
+  .add-row{display:flex;gap:8px;margin-bottom:16px;}
+  .btn{
+    background:var(--accent);color:#141208;border:0;border-radius:10px;
+    padding:0 18px;font-weight:600;font-size:15px;cursor:pointer;white-space:nowrap;
+  }
+  .btn:active{transform:translateY(1px);}
+  .ghost{background:none;border:0;color:var(--ink-faint);cursor:pointer;font-size:13px;padding:6px;}
+  .ghost:hover{color:var(--danger);}
+
+  /* ---- Notes ---- */
+  .note{padding:15px 16px;margin-bottom:10px;}
+  .note textarea{background:none;border:0;padding:0;min-height:24px;}
+  .note textarea:focus{outline:none;}
+  .note .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px;}
+  .note .stamp{font-family:var(--f-mono);font-size:11px;color:var(--ink-faint);}
+
+  /* ---- Habits ---- */
+  .habit{padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;}
+  .habit .name{flex:1;font-size:16px;}
+  .streak{font-family:var(--f-mono);font-size:12px;color:var(--accent);min-width:52px;text-align:right;}
+  .check{
+    width:30px;height:30px;border-radius:50%;border:1.8px solid var(--line);
+    display:grid;place-items:center;cursor:pointer;flex-shrink:0;transition:.15s;
+  }
+  .check.on{background:var(--done);border-color:var(--done);}
+  .check svg{width:16px;height:16px;stroke:#0d0d0f;stroke-width:3;fill:none;opacity:0;}
+  .check.on svg{opacity:1;}
+  .week{display:flex;gap:5px;margin-top:10px;}
+  .week span{flex:1;height:6px;border-radius:3px;background:var(--panel-2);}
+  .week span.hit{background:var(--done);}
+
+  /* ---- Tasks ---- */
+  .task{padding:13px 16px;margin-bottom:9px;display:flex;align-items:center;gap:13px;}
+  .task .box{
+    width:22px;height:22px;border-radius:6px;border:1.8px solid var(--line);
+    cursor:pointer;flex-shrink:0;display:grid;place-items:center;
+  }
+  .task .box svg{width:13px;height:13px;stroke:var(--accent);stroke-width:3;fill:none;opacity:0;}
+  .task.done .box{background:var(--accent-soft);border-color:var(--accent);}
+  .task.done .box svg{opacity:1;}
+  .task .label{flex:1;font-size:15px;}
+  .task.done .label{color:var(--ink-faint);text-decoration:line-through;}
+
+  .hint{font-size:12px;color:var(--ink-faint);text-align:center;margin-top:28px;line-height:1.6;}
+  .hint code{font-family:var(--f-mono);color:var(--ink-dim);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 id="greeting">Base</h1>
+    <span class="date" id="today"></span>
+  </header>
+  <main id="view"></main>
+  <p class="hint">Everything is saved on this device. Add to Home Screen to use it like an app.</p>
+</div>
+
+<nav class="tabs" id="nav"></nav>
+
+<script>
+/* =========================================================================
+   Base — a personal everything-app.
+   Plain JavaScript, no libraries. Data lives in this browser (localStorage).
+   Read it top to bottom; each section is labelled. Change freely.
+   ========================================================================= */
+
+/* ---- 1. Storage: load & save the whole app state as one object ---------- */
+const KEY = "base.v1";
+const defaultState = { notes:[], habits:[], tasks:[] };
+let state = load();
+
+function load(){
+  try { return { ...defaultState, ...JSON.parse(localStorage.getItem(KEY)) }; }
+  catch { return structuredClone(defaultState); }
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const todayKey = (d=new Date()) => d.toISOString().slice(0,10);   // "2026-07-25"
+
+/* ---- 2. Router: three tabs, each is a render function ------------------- */
+const tabs = [
+  { id:"notes",  label:"Notes",  icon:'<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>' },
+  { id:"habits", label:"Habits", icon:'<path d="M20 6 9 17l-5-5"/>' },
+  { id:"tasks",  label:"Tasks",  icon:'<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>' },
+];
+let active = "notes";
+
+function renderNav(){
+  document.getElementById("nav").innerHTML = tabs.map(t => `
+    <button class="${t.id===active?'active':''}" onclick="go('${t.id}')">
+      <svg viewBox="0 0 24 24">${t.icon}</svg>${t.label}
+    </button>`).join("");
+}
+function go(id){ active=id; render(); }
+
+function render(){
+  renderNav();
+  const v = document.getElementById("view");
+  v.className = "fade";
+  if(active==="notes")  v.innerHTML = viewNotes();
+  if(active==="habits") v.innerHTML = viewHabits();
+  if(active==="tasks")  v.innerHTML = viewTasks();
+  // re-trigger the fade
+  void v.offsetWidth; v.classList.add("fade");
+}
+
+/* ---- 3. Notes ----------------------------------------------------------- */
+function viewNotes(){
+  const list = state.notes.map(n => `
+    <div class="card note">
+      <textarea rows="1" placeholder="Write…"
+        oninput="autogrow(this);editNote('${n.id}',this.value)">${esc(n.text)}</textarea>
+      <div class="meta">
+        <span class="stamp">${n.stamp}</span>
+        <button class="ghost" onclick="delNote('${n.id}')">delete</button>
+      </div>
+    </div>`).join("");
+  return `<p class="eyebrow">Notes</p>
+    <div class="add-row">
+      <input id="noteInput" placeholder="New note…" onkeydown="if(event.key==='Enter')addNote()">
+      <button class="btn" onclick="addNote()">Add</button>
+    </div>
+    ${state.notes.length ? list : `<div class="empty">A blank page. Start writing.</div>`}`;
+}
+function addNote(){
+  const el = document.getElementById("noteInput"); const text = el.value.trim();
+  if(!text) return;
+  state.notes.unshift({ id:uid(), text, stamp:stamp() });
+  save(); render();
+}
+function editNote(id,val){ const n=state.notes.find(x=>x.id===id); if(n){n.text=val;save();} }
+function delNote(id){ state.notes=state.notes.filter(x=>x.id!==id); save(); render(); }
+
+/* ---- 4. Habits (with streaks) ------------------------------------------- */
+function viewHabits(){
+  const t = todayKey();
+  const list = state.habits.map(h => {
+    const on = h.log.includes(t);
+    return `<div class="card habit">
+      <div class="check ${on?'on':''}" onclick="toggleHabit('${h.id}')">
+        <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="name">${esc(h.name)}</span>
+          <span class="streak">${streak(h.log)}🔥</span>
+          <button class="ghost" onclick="delHabit('${h.id}')">✕</button>
+        </div>
+        <div class="week">${last7(h.log)}</div>
+      </div>
+    </div>`;
+  }).join("");
+  return `<p class="eyebrow">Daily Habits</p>
+    <div class="add-row">
+      <input id="habitInput" placeholder="New habit…" onkeydown="if(event.key==='Enter')addHabit()">
+      <button class="btn" onclick="addHabit()">Add</button>
+    </div>
+    ${state.habits.length ? list : `<div class="empty">No habits yet. Name one small thing.</div>`}`;
+}
+function addHabit(){
+  const el=document.getElementById("habitInput"); const name=el.value.trim();
+  if(!name) return;
+  state.habits.push({ id:uid(), name, log:[] });
+  save(); render();
+}
+function toggleHabit(id){
+  const h=state.habits.find(x=>x.id===id); const t=todayKey();
+  h.log = h.log.includes(t) ? h.log.filter(d=>d!==t) : [...h.log,t];
+  save(); render();
+}
+function delHabit(id){ state.habits=state.habits.filter(x=>x.id!==id); save(); render(); }
+function streak(log){
+  let n=0, d=new Date();
+  while(log.includes(todayKey(d))){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function last7(log){
+  let out="";
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    out += `<span class="${log.includes(todayKey(d))?'hit':''}"></span>`;
+  }
+  return out;
+}
+
+/* ---- 5. Tasks ----------------------------------------------------------- */
+function viewTasks(){
+  const open = state.tasks.filter(x=>!x.done);
+  const done = state.tasks.filter(x=>x.done);
+  const row = t => `<div class="card task ${t.done?'done':''}">
+      <div class="box" onclick="toggleTask('${t.id}')">
+        <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <span class="label">${esc(t.text)}</span>
+      <button class="ghost" onclick="delTask('${t.id}')">✕</button>
+    </div>`;
+  return `<p class="eyebrow">Tasks</p>
+    <div class="add-row">
+      <input id="taskInput" placeholder="What needs doing?" onkeydown="if(event.key==='Enter')addTask()">
+      <button class="btn" onclick="addTask()">Add</button>
+    </div>
+    ${state.tasks.length ? open.map(row).join("")+done.map(row).join("")
+      : `<div class="empty">Nothing on the list. Enjoy it.</div>`}`;
+}
+function addTask(){
+  const el=document.getElementById("taskInput"); const text=el.value.trim();
+  if(!text) return;
+  state.tasks.unshift({ id:uid(), text, done:false });
+  save(); render();
+}
+function toggleTask(id){ const t=state.tasks.find(x=>x.id===id); t.done=!t.done; save(); render(); }
+function delTask(id){ state.tasks=state.tasks.filter(x=>x.id!==id); save(); render(); }
+
+/* ---- 6. Small helpers --------------------------------------------------- */
+function esc(s){ return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function stamp(){ return new Date().toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }
+function autogrow(el){ el.style.height="auto"; el.style.height=el.scrollHeight+"px"; }
+
+/* ---- 7. Boot ------------------------------------------------------------ */
+document.getElementById("today").textContent =
+  new Date().toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+const h=new Date().getHours();
+document.getElementById("greeting").textContent =
+  h<12 ? "Good morning" : h<18 ? "Good afternoon" : "Good evening";
+render();
+document.querySelectorAll(".note textarea").forEach(autogrow);
+</script>
+</body>
+</html>
